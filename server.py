@@ -48,8 +48,11 @@ async def connect_to_cookidoo() -> str:
         Exception: If authentication fails
     """
     global _cookidoo_service, _cookidoo_api
-    
+
     try:
+        if _cookidoo_service:
+            await _cookidoo_service.close()
+
         # Load credentials and configuration from .env file
         email, password, country, language, device = load_cookidoo_credentials()
 
