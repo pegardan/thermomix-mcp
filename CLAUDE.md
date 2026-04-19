@@ -51,7 +51,7 @@ Use the `/browse` skill from gstack for all web browsing. Never use `mcp__claude
 Available gstack skills:
 `/office-hours`, `/plan-ceo-review`, `/plan-eng-review`, `/plan-design-review`, `/design-consultation`, `/design-shotgun`, `/design-html`, `/review`, `/ship`, `/land-and-deploy`, `/canary`, `/benchmark`, `/browse`, `/connect-chrome`, `/qa`, `/qa-only`, `/design-review`, `/setup-browser-cookies`, `/setup-deploy`, `/retro`, `/investigate`, `/document-release`, `/codex`, `/cso`, `/autoplan`, `/plan-devex-review`, `/devex-review`, `/careful`, `/freeze`, `/guard`, `/unfreeze`, `/gstack-upgrade`, `/learn`
 
-Fork mejorado de `alexandrepa/mcp-cookidoo`. MCP server local para Claude Desktop y Claude Code que convierte recetas (URL / texto / foto) al formato Thermomix y las sube a Cookidoo automáticamente.
+MCP server local para Claude Desktop y Claude Code. Convierte recetas (URL / texto / foto) al formato Thermomix, las sube a Cookidoo y planifica la semana familiar con las recetas aprobadas.
 
 ## Objetivo
 
@@ -102,9 +102,9 @@ cookidoo-api>=0.18.0  # o la versión que corresponda — verificar que incluye 
 
 **Nota:** v0.17.0 ya está en PyPI pero PR #179 NO estaba incluido. No cambiar la dependencia basándose en el número de versión solo — verificar que `Cookidoo` tenga `create_custom_recipe` antes de migrar.
 
-### 3. `alexandrepa/mcp-cookidoo` — base del fork de servidor MCP
+### 3. `alexandrepa/mcp-cookidoo` — base original (crédito)
 
-4 tools MCP originales: `connect_to_cookidoo`, `get_recipe_details`, `generate_recipe_structure`, `upload_custom_recipe`.
+4 tools MCP originales que sirvieron de punto de partida: `connect_to_cookidoo`, `get_recipe_details`, `generate_recipe_structure`, `upload_custom_recipe`. El proyecto ha evolucionado sustancialmente desde esa base.
 
 **Bugs conocidos en el original que corregimos:**
 - `time.sleep(5)` bloqueante en contexto `async` — congela el event loop
@@ -187,7 +187,7 @@ Pendiente evaluar si `CookidooInstruction` / `CookidooStepSettings` del fork Mar
 ## Plan de implementación
 
 ### Fase 1 — Setup del fork ✅
-- [x] Fork de `alexandrepa/mcp-cookidoo`
+- [x] Base inicial: `alexandrepa/mcp-cookidoo` (proyecto ahora independiente en `pegardan/thermomix-mcp`)
 - [x] Cambiar dependencia a `Mariosd23/cookidoo-api`
 - [x] Tests unitarios (43 tests, 0 fallos)
 
@@ -255,7 +255,8 @@ uv sync
 
 ## Referencias
 
-- Repo base: https://github.com/alexandrepa/mcp-cookidoo
+- Repo: https://github.com/pegardan/thermomix-mcp
+- Origen (crédito): https://github.com/alexandrepa/mcp-cookidoo
 - cookidoo-api oficial: https://github.com/miaucl/cookidoo-api
 - Fork con create/edit: https://github.com/Mariosd23/cookidoo-api
 - PR #179 (pendiente): https://github.com/miaucl/cookidoo-api/pull/179
