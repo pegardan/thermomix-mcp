@@ -5,6 +5,7 @@ Main server file containing MCP tool definitions for interacting with Cookidoo.
 """
 
 import os
+import re
 from dotenv import load_dotenv
 from fastmcp import FastMCP
 from fastmcp.prompts import Message
@@ -52,24 +53,28 @@ async def connect_to_cookidoo() -> str:
     try:
         if _cookidoo_service:
             await _cookidoo_service.close()
+        _cookidoo_service = None
+        _cookidoo_api = None
 
         # Load credentials and configuration from .env file
         email, password, country, language, device = load_cookidoo_credentials()
 
         # Create Cookidoo service instance
         _cookidoo_service = CookidooService(email, password, country, language, device)
-        
+
         # Authenticate and get API client
         _cookidoo_api = await _cookidoo_service.login()
-        
+
         return f"Successfully connected to Cookidoo as {email}"
-        
+
     except ValueError as e:
-        # Missing credentials
+        _cookidoo_service = None
+        _cookidoo_api = None
         return f"Configuration Error: {str(e)}\n\nPlease ensure your .env file contains COOKIDOO_EMAIL and COOKIDOO_PASSWORD"
-        
+
     except Exception as e:
-        # Authentication or other errors
+        _cookidoo_service = None
+        _cookidoo_api = None
         return f"Connection Failed: {str(e)}\n\nPlease check your credentials and try again."
 
 
@@ -185,7 +190,7 @@ async def generate_recipe_structure(
 
         # Parse steps (split by newlines or numbered steps)
         steps_list = [
-            step.strip().lstrip('0123456789.)-• ')
+            re.sub(r'^\s*\d+\s*[.)]\s*', '', step).strip()
             for step in steps.split('\n')
             if step.strip()
         ]

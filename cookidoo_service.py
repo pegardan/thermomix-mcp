@@ -86,7 +86,7 @@ class CookidooService:
                 password=self.password,
                 localization=localizations[0],
             )
-            del self.password
+            self.password = None
 
             self._api_client = Cookidoo(session=self._session, cfg=config)
             await self._api_client.login()
