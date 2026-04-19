@@ -111,10 +111,10 @@ _Construido sobre `alexandrepa/mcp-cookidoo` como base_
 
 ### Alta prioridad
 
-- [ ] **Commitear todo el trabajo pendiente** — `.env.example`, `cookidoo_service.py`, `requirements.txt`, `server.py`, `README.md`, `tests/`, `setup.sh`, `pytest.ini` están sin commitear o sin rastrear. Sin esto no hay open source real. Estrategia: un commit por fase o un único `feat: phases 1-4 refactor, tests, and MCP prompt /receta`.
+- [x] **Commitear todo el trabajo pendiente** — commiteado en `feat/phases-1-4-refactor` y mergeado. Commits incluyen: phases 1-4 refactor, 54 tests, VERSION 0.1.0.0, CHANGELOG.md. _(2026-04-18)_
 - [ ] **Verificar slash command en Claude Desktop** — registrar el MCP server en `claude_desktop_config.json` y confirmar que `/receta` aparece. Sin esta verificación la Fase 4 no está realmente completa.
 - [ ] **Fix SSL** — `verify_ssl=False` en `cookidoo_service.py:72` deshabilita verificación de certificados. Mínimo hacerlo configurable con `COOKIDOO_VERIFY_SSL=false` en `.env`, o investigar si Cookidoo tiene un cert issue real.
-- [ ] **Actualizar CLAUDE.md** — Fase 4 marcada como `[ ]` pending pero el código ya la tiene implementada. Marcar como `[x]`.
+- [x] **Actualizar CLAUDE.md** — Fase 4 marcada como `[x]`. Proyecto migrado a repo independiente `pegardan/thermomix-mcp`. _(2026-04-19)_
 
 ### Prioridad media
 
@@ -138,13 +138,13 @@ _Construido sobre `alexandrepa/mcp-cookidoo` como base_
 
 ## Success Criteria
 
-- CHANGELOG.md creado y commiteado con toda la historia
-- CLAUDE.md actualizado con Fase 4 marcada como ✅
-- TODO visible para contribuidores en el repo
+- [x] CHANGELOG.md creado y commiteado con toda la historia _(2026-04-18)_
+- [x] CLAUDE.md actualizado con Fase 4 marcada como ✅ _(2026-04-19)_
+- [x] TODO visible para contribuidores en el repo — `TODOS.md` en raíz _(2026-04-19)_
 
 ## Distribution Plan
 
-GitHub repo público. El `setup.sh` ya maneja la instalación del lado del usuario.
+Repo independiente en GitHub: `pegardan/thermomix-mcp`. El `setup.sh` maneja la instalación del lado del usuario.
 
 ## What I noticed about how you think
 

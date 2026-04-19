@@ -46,7 +46,7 @@ Al declarar el skill como MCP Prompt queda disponible como `/receta` tanto en Cl
 ### 1. Clonar y ejecutar setup
 
 ```bash
-git clone <este-repo>
+git clone https://github.com/pegardan/thermomix-mcp
 cd thermomix-mcp
 bash setup.sh
 ```
@@ -65,6 +65,7 @@ COOKIDOO_PASSWORD=tupassword
 COOKIDOO_COUNTRY=es
 COOKIDOO_LANGUAGE=es-ES
 COOKIDOO_DEVICE=TM6        # TM5, TM6, TM7 o TM31
+COOKIDOO_VERIFY_SSL=true   # false si usas proxy MITM o red corporativa
 ```
 
 ### 3. Registrar en Claude Desktop
@@ -132,7 +133,7 @@ Además del prompt `/receta`, el server expone estos tools que Claude usa intern
 .venv/bin/python -m pytest tests/ -v
 ```
 
-43 tests, 0 fallos. Cubren validación Pydantic, lógica del service (con mocks) y los MCP tools vía cliente in-process.
+82 tests, 0 fallos. Cubren validación Pydantic, lógica del service (con mocks) y los MCP tools vía cliente in-process.
 
 ---
 
@@ -142,7 +143,7 @@ Además del prompt `/receta`, el server expone estos tools que Claude usa intern
 |---|---|
 | Auth email/password | ✅ |
 | create/edit custom recipe | ✅ |
-| Skill `/receta` (MCP Prompt) | 🔧 en desarrollo |
+| Skill `/receta` (MCP Prompt) | ✅ |
 | Anotaciones INGREDIENT + TTS | ⏳ Fase B |
 | Soporte `Mariosd23` PR mergeado | ⏳ pendiente upstream |
 

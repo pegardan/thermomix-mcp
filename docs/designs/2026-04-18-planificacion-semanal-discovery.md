@@ -307,15 +307,35 @@ MCP server local — igual que el setup actual. Sin cambios en distribución. El
 |--------|---------|-----|------|--------|----------|
 | CEO Review | `/plan-ceo-review` | Scope & strategy | 0 | — | — |
 | Codex Review | `/codex review` | Independent 2nd opinion | 0 | — | — |
-| Eng Review | `/plan-eng-review` | Architecture & tests (required) | 1 | CLEAR (PLAN) | 9 issues, 3 critical gaps |
+| Eng Review | `/plan-eng-review` | Architecture & tests (required) | 3 | CLEAR (PLAN) | 13 issues total, 0 critical gaps — all resolved |
 | Design Review | `/plan-design-review` | UI/UX gaps | 0 | — | — |
 | DX Review | `/plan-devex-review` | Developer experience gaps | 0 | — | — |
 
-**OUTSIDE VOICE:** Claude subagent run. Found 7 issues — 4 surfaced to user (sync_library conflation, family_profile read-only, weekly_plans no reader, The Assignment sequencing), all resolved.
+**OUTSIDE VOICE (run 2):** Claude subagent. 7 findings — 3 real (sync_library fase 2 silent, plan_week empty-library fallback, confirm_plan error swallow), 2 auto-fix (aiosqlite missing, setup.sh mkdir), 2 dismissed (concurrent safety acceptable for personal server, token expiry → built now). All resolved.
+
+**Run 3 additions (2026-04-19, post-Assignment):**
+- **Issue 1:** `confirm_plan` defaults to `add_recipes_to_calendar` (catalog API) when recipe_id not in local DB. Matches the browse → plan happy path.
+- **Issue 2:** `_require_api()` helper in `server.py` — DRY auth check for the 6 new tools.
+- **Issue 3:** `db.py` sets `PRAGMA user_version=1`, `journal_mode=WAL`, includes no-op `_migrate(conn)` ladder.
+- **Issue 4:** `_load_family_profile()` catches `JSONDecodeError`, returns default + warning embedded in `/semana` system message.
+- **Issue 5:** `THERMOMIX_DATA_DIR` env var (default `~/.thermomix`) controls DB + family profile paths. Tests monkeypatch it to tmpdir.
+- **Issue 6:** `plan_week` uses `asyncio.gather` for the 4 calendar history fetches.
+
+**Scope additions from run 2:**
+- `get_weekly_plans` tool (6to tool) — added to scope
+- Re-auth retry in CookidooService — added to scope
+- `plan_week` progressive fallback (rating >= 3 → >= 1 → null → error)
+- `confirm_plan` structured error response `{confirmed, failed, message}`
+- `plan_week` notes field when calendar history is missing
+- `_load_family_profile()` with `_default: True` flag
+
+**Test plan (run 3):** ~41 new tests across `test_db.py` (NEW), `test_cookidoo_service.py` (extend), `test_server.py` (extend). 0 regressions.
+
+**Implementation lanes (run 3):** Lane A `db.py` + Lane B `cookidoo_service.py` extensions are independent. Lane C `server.py` waits for both. For solo dev, sequential 1 → 2 → 3 is recommended over worktree parallelization.
 
 **UNRESOLVED:** 0
 
-**VERDICT:** ENG CLEARED — ready to implement (after The Assignment)
+**VERDICT:** ENG CLEARED — ready to implement
 
 ---
 

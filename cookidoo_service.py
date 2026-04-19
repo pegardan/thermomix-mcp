@@ -70,8 +70,12 @@ class CookidooService:
             Exception: If authentication fails
         """
         try:
-            # TODO: make verify_ssl configurable via COOKIDOO_VERIFY_SSL env var (see TODOS.md)
-            self._session = ClientSession(connector=aiohttp.TCPConnector(verify_ssl=False))
+            verify_ssl = os.getenv("COOKIDOO_VERIFY_SSL", "true").lower() != "false"
+            timeout = aiohttp.ClientTimeout(total=30)
+            self._session = ClientSession(
+                connector=aiohttp.TCPConnector(verify_ssl=verify_ssl),
+                timeout=timeout,
+            )
 
             localizations = await get_localization_options(country=self.country, language=self.language)
             if not localizations:
@@ -82,6 +86,7 @@ class CookidooService:
                 password=self.password,
                 localization=localizations[0],
             )
+            self.password = None
 
             self._api_client = Cookidoo(session=self._session, cfg=config)
             await self._api_client.login()

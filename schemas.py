@@ -4,7 +4,7 @@ Recipe Schemas
 Pydantic models for custom recipe data validation.
 """
 
-from pydantic import BaseModel, Field, ConfigDict
+from pydantic import BaseModel, Field, ConfigDict, model_validator
 from typing import Optional
 
 
@@ -72,3 +72,11 @@ class CustomRecipe(BaseModel):
         default=None,
         description="Optional cooking tips or hints"
     )
+
+    @model_validator(mode='after')
+    def check_times(self) -> 'CustomRecipe':
+        if self.prep_time > self.total_time:
+            raise ValueError(
+                f"prep_time ({self.prep_time}min) cannot exceed total_time ({self.total_time}min)"
+            )
+        return self

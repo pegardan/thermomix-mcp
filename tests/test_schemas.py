@@ -131,3 +131,32 @@ def test_json_roundtrip_no_hints():
     restored = CustomRecipe.model_validate_json(json_str)
     assert restored.hints is None
     assert recipe == restored
+
+
+# ---------------------------------------------------------------------------
+# check_times model_validator (new in this branch)
+# ---------------------------------------------------------------------------
+
+
+def test_prep_time_exceeds_total_time_raises():
+    """prep_time > total_time must be rejected by the model validator."""
+    with pytest.raises(ValidationError, match="prep_time.*cannot exceed total_time"):
+        CustomRecipe(
+            name="Bad Times",
+            ingredients=["1 egg"],
+            steps=["Cook"],
+            prep_time=60,
+            total_time=30,
+        )
+
+
+def test_prep_time_equal_total_time_valid():
+    """prep_time == total_time is allowed (edge boundary)."""
+    recipe = CustomRecipe(
+        name="Equal Times",
+        ingredients=["1 egg"],
+        steps=["Cook"],
+        prep_time=45,
+        total_time=45,
+    )
+    assert recipe.prep_time == recipe.total_time
