@@ -307,15 +307,23 @@ MCP server local — igual que el setup actual. Sin cambios en distribución. El
 |--------|---------|-----|------|--------|----------|
 | CEO Review | `/plan-ceo-review` | Scope & strategy | 0 | — | — |
 | Codex Review | `/codex review` | Independent 2nd opinion | 0 | — | — |
-| Eng Review | `/plan-eng-review` | Architecture & tests (required) | 1 | CLEAR (PLAN) | 9 issues, 3 critical gaps |
+| Eng Review | `/plan-eng-review` | Architecture & tests (required) | 2 | CLEAR (PLAN) | 7 issues, 1 critical gap — all resolved |
 | Design Review | `/plan-design-review` | UI/UX gaps | 0 | — | — |
 | DX Review | `/plan-devex-review` | Developer experience gaps | 0 | — | — |
 
-**OUTSIDE VOICE:** Claude subagent run. Found 7 issues — 4 surfaced to user (sync_library conflation, family_profile read-only, weekly_plans no reader, The Assignment sequencing), all resolved.
+**OUTSIDE VOICE (run 2):** Claude subagent. 7 findings — 3 real (sync_library fase 2 silent, plan_week empty-library fallback, confirm_plan error swallow), 2 auto-fix (aiosqlite missing, setup.sh mkdir), 2 dismissed (concurrent safety acceptable for personal server, token expiry → built now). All resolved.
+
+**Scope additions from run 2:**
+- `get_weekly_plans` tool (6to tool) — added to scope
+- Re-auth retry in CookidooService — added to scope
+- `plan_week` progressive fallback (rating >= 3 → >= 1 → null → error)
+- `confirm_plan` structured error response `{confirmed, failed, message}`
+- `plan_week` notes field when calendar history is missing
+- `_load_family_profile()` with `_default: True` flag
 
 **UNRESOLVED:** 0
 
-**VERDICT:** ENG CLEARED — ready to implement (after The Assignment)
+**VERDICT:** ENG CLEARED — ready to implement
 
 ---
 
