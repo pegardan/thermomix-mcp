@@ -189,7 +189,7 @@ Pendiente evaluar si `CookidooInstruction` / `CookidooStepSettings` del fork Mar
 ### Fase 1 — Setup del fork ✅
 - [x] Base inicial: `alexandrepa/mcp-cookidoo` (proyecto ahora independiente en `pegardan/thermomix-mcp`)
 - [x] Cambiar dependencia a `Mariosd23/cookidoo-api`
-- [x] Tests unitarios (43 tests, 0 fallos)
+- [x] Tests unitarios (82 tests, 0 fallos)
 
 ### Fase 2 — Refactor de cookidoo_service.py ✅
 - [x] Reemplazar bloque manual de `create_custom_recipe`
@@ -213,6 +213,15 @@ Pendiente evaluar si `CookidooInstruction` / `CookidooStepSettings` del fork Mar
 - [ ] Extender `create_custom_recipe` para pasar anotaciones
 - [ ] Actualizar prompt para que Claude calcule offsets
 
+### Fase 6 — Planificador semanal (spec aprobado)
+Spec: `docs/designs/2026-04-18-planificacion-semanal-discovery.md`
+- [ ] `sync_cookidoo_recipes` — importa recetas del catálogo Cookidoo a SQLite local
+- [ ] `get_planned_week` — lee el calendario Cookidoo de la semana
+- [ ] `propose_weekly_plan` — sugiere plan semanal combinando recetas aprobadas y nuevas
+- [ ] `confirm_plan` — escribe el plan aprobado al calendario Cookidoo
+- [ ] `browse_cookidoo_collections` — navega colecciones gestionadas para descubrimiento
+- [ ] MCP Prompt `/semana` — flujo conversacional de planning semanal
+
 ---
 
 ## Variables de entorno (.env)
@@ -223,6 +232,7 @@ COOKIDOO_PASSWORD=tupassword
 COOKIDOO_COUNTRY=es               # default: es
 COOKIDOO_LANGUAGE=es-ES           # default: es-ES
 COOKIDOO_DEVICE=TM6               # opciones: TM5, TM6, TM7, TM31
+COOKIDOO_VERIFY_SSL=true          # default: true; false para proxies MITM / redes corporativas
 ```
 
 ---

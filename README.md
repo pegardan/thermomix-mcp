@@ -65,6 +65,7 @@ COOKIDOO_PASSWORD=tupassword
 COOKIDOO_COUNTRY=es
 COOKIDOO_LANGUAGE=es-ES
 COOKIDOO_DEVICE=TM6        # TM5, TM6, TM7 o TM31
+COOKIDOO_VERIFY_SSL=true   # false si usas proxy MITM o red corporativa
 ```
 
 ### 3. Registrar en Claude Desktop
@@ -132,7 +133,7 @@ Además del prompt `/receta`, el server expone estos tools que Claude usa intern
 .venv/bin/python -m pytest tests/ -v
 ```
 
-54 tests, 0 fallos. Cubren validación Pydantic, lógica del service (con mocks) y los MCP tools vía cliente in-process.
+82 tests, 0 fallos. Cubren validación Pydantic, lógica del service (con mocks) y los MCP tools vía cliente in-process.
 
 ---
 
