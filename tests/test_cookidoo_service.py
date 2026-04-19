@@ -332,3 +332,61 @@ async def test_edit_recipe_api_error_propagates():
 
     with pytest.raises(Exception):
         await service.edit_custom_recipe("recipe-123", name="New Name")
+
+
+# ---------------------------------------------------------------------------
+# CookidooService — api_client property
+# ---------------------------------------------------------------------------
+
+
+def test_api_client_property_none_by_default():
+    service = CookidooService("a@b.com", "pass")
+    assert service.api_client is None
+
+
+def test_api_client_property_returns_set_client():
+    service = CookidooService("a@b.com", "pass")
+    mock_api = MagicMock()
+    service._api_client = mock_api
+    assert service.api_client is mock_api
+
+
+# ---------------------------------------------------------------------------
+# CookidooService.login — COOKIDOO_VERIFY_SSL=false branch
+# ---------------------------------------------------------------------------
+
+
+@patch("cookidoo_service.aiohttp.TCPConnector")
+@patch("cookidoo_service.ClientSession")
+@patch("cookidoo_service.get_localization_options", new_callable=AsyncMock)
+async def test_login_verify_ssl_false(mock_get_loc, MockSession, MockConnector, monkeypatch):
+    """When COOKIDOO_VERIFY_SSL=false, TCPConnector must be called with verify_ssl=False."""
+    monkeypatch.setenv("COOKIDOO_VERIFY_SSL", "false")
+    mock_get_loc.return_value = []  # will raise → exception path, but connector is created first
+    mock_session = MagicMock()
+    mock_session.close = AsyncMock()
+    MockSession.return_value = mock_session
+
+    service = CookidooService("t@t.com", "p")
+    with pytest.raises(Exception):
+        await service.login()
+
+    MockConnector.assert_called_once_with(verify_ssl=False)
+
+
+@patch("cookidoo_service.aiohttp.TCPConnector")
+@patch("cookidoo_service.ClientSession")
+@patch("cookidoo_service.get_localization_options", new_callable=AsyncMock)
+async def test_login_verify_ssl_true_by_default(mock_get_loc, MockSession, MockConnector, monkeypatch):
+    """When COOKIDOO_VERIFY_SSL is absent, TCPConnector must be called with verify_ssl=True."""
+    monkeypatch.delenv("COOKIDOO_VERIFY_SSL", raising=False)
+    mock_get_loc.return_value = []
+    mock_session = MagicMock()
+    mock_session.close = AsyncMock()
+    MockSession.return_value = mock_session
+
+    service = CookidooService("t@t.com", "p")
+    with pytest.raises(Exception):
+        await service.login()
+
+    MockConnector.assert_called_once_with(verify_ssl=True)

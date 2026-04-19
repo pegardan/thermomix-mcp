@@ -457,3 +457,122 @@ async def test_upload_recipe_create_raises_returns_error(monkeypatch):
         result = await client.call_tool("upload_custom_recipe", {"recipe_json": recipe_json})
     text = _get_text(result)
     assert "Upload failed" in text
+
+
+# ---------------------------------------------------------------------------
+# connect_to_cookidoo — reconnect path (existing service is closed first)
+# ---------------------------------------------------------------------------
+
+
+@patch("cookidoo_service.load_dotenv")
+@patch("server.CookidooService")
+async def test_connect_closes_prior_service_before_reconnecting(MockService, mock_dotenv, monkeypatch):
+    """If a service already exists, it must be closed before creating a new one."""
+    monkeypatch.setenv("COOKIDOO_EMAIL", "user@test.com")
+    monkeypatch.setenv("COOKIDOO_PASSWORD", "pass")
+    monkeypatch.setenv("COOKIDOO_COUNTRY", "es")
+    monkeypatch.setenv("COOKIDOO_LANGUAGE", "es-ES")
+    monkeypatch.setenv("COOKIDOO_DEVICE", "TM6")
+
+    existing_service = AsyncMock()
+    existing_service.close = AsyncMock()
+    monkeypatch.setattr(server, "_cookidoo_service", existing_service)
+
+    new_instance = AsyncMock()
+    new_instance.login = AsyncMock(return_value=MagicMock())
+    MockService.return_value = new_instance
+
+    async with Client(mcp) as client:
+        await client.call_tool("connect_to_cookidoo", {})
+
+    existing_service.close.assert_awaited_once()
+
+
+# ---------------------------------------------------------------------------
+# get_recipe_details — ingredient WITH quantity (truthy branch)
+# ---------------------------------------------------------------------------
+
+
+async def test_get_recipe_details_ingredient_with_quantity(monkeypatch):
+    """Ingredient quantity should appear in output when it is a non-empty value."""
+    mock_recipe = MagicMock()
+    mock_recipe.name = "Gazpacho"
+    mock_recipe.id = "r00002"
+    mock_ingredient = MagicMock()
+    mock_ingredient.name = "tomate"
+    mock_ingredient.quantity = "500 g"
+    mock_recipe.ingredients = [mock_ingredient]
+    mock_recipe.steps = []
+
+    mock_api = AsyncMock()
+    mock_api.get_recipe_details.return_value = mock_recipe
+    monkeypatch.setattr(server, "_cookidoo_api", mock_api)
+
+    async with Client(mcp) as client:
+        result = await client.call_tool("get_recipe_details", {"recipe_id": "r00002"})
+    text = _get_text(result)
+    assert "tomate" in text
+    assert "500 g" in text
+
+
+# ---------------------------------------------------------------------------
+# _parse_text_list — direct unit tests
+# ---------------------------------------------------------------------------
+
+
+from server import _parse_text_list  # noqa: E402
+
+
+def test_parse_text_list_newline_split():
+    assert _parse_text_list("a\nb\nc") == ["a", "b", "c"]
+
+
+def test_parse_text_list_comma_split():
+    assert _parse_text_list("a,b,c") == ["a", "b", "c"]
+
+
+def test_parse_text_list_strips_whitespace():
+    assert _parse_text_list("  a  ,  b  ") == ["a", "b"]
+
+
+def test_parse_text_list_filters_empty():
+    assert _parse_text_list("a,,b") == ["a", "b"]
+
+
+def test_parse_text_list_newline_takes_precedence_over_comma():
+    """If newlines are present, split by newlines even if commas exist."""
+    result = _parse_text_list("a,b\nc,d")
+    assert result == ["a,b", "c,d"]
+
+
+# ---------------------------------------------------------------------------
+# receta() — assistant message contains device name
+# ---------------------------------------------------------------------------
+
+
+def test_receta_assistant_message_contains_device(monkeypatch):
+    monkeypatch.setenv("COOKIDOO_DEVICE", "TM5")
+    result = receta_prompt()
+    assistant_text = _msg_text(result[1])
+    assert "TM5" in assistant_text
+
+
+# ---------------------------------------------------------------------------
+# generate_recipe_structure — prep_time > total_time triggers check_times
+# ---------------------------------------------------------------------------
+
+
+async def test_generate_recipe_prep_time_exceeds_total_time_returns_error():
+    async with Client(mcp) as client:
+        result = await client.call_tool(
+            "generate_recipe_structure",
+            {
+                "name": "Bad Recipe",
+                "ingredients": "1 egg",
+                "steps": "Cook",
+                "prep_time": 60,
+                "total_time": 30,
+            },
+        )
+    text = _get_text(result)
+    assert "Validation failed" in text
