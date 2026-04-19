@@ -6,6 +6,32 @@ Format: [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 
 ---
 
+## [0.2.0.0] — 2026-04-19
+
+### Added
+
+- **`COOKIDOO_VERIFY_SSL` env var** — TLS verification now configurable (default `true`); disabling it no longer requires code changes
+- **30-second HTTP timeout** on `aiohttp.ClientSession` — prevents indefinite hangs on flaky networks
+- **82-test suite** (up from 54): full coverage of `login()` happy path, `close()`, `get_recipe_details` all branches, `_parse_text_list`, `check_times` validator, reconnect session cleanup, and more
+- **`prep_time ≤ total_time` validator** in `CustomRecipe` Pydantic model — rejects recipes where active time exceeds total time
+- **Planning feature spec** at `docs/designs/2026-04-18-planificacion-semanal-discovery.md` — full discovery for Phase 5 weekly meal planner (6 new MCP tools + `/semana` prompt + SQLite local DB)
+- **`docs/adr/`** with ADRs 0001–0004 committed
+
+### Changed
+
+- `connect_to_cookidoo` closes the previous `aiohttp.ClientSession` before creating a new one (session leak fix)
+- `connect_to_cookidoo` resets `_cookidoo_service` and `_cookidoo_api` to `None` in all error paths — stale session references no longer survive a failed reconnect
+- `generate_recipe_structure` step parsing now uses `re.sub(r'^\s*\d+\s*[.)]\s*', '', step)` instead of `lstrip('0123456789.)-• ')` — steps like "180°C for 12 min" no longer have their leading digits stripped
+- `CookidooService.password` set to `None` after `login()` (replaces `del self.password` — safe for re-authentication on the same instance)
+- Repo references updated to `pegardan/thermomix-mcp`
+
+### Fixed
+
+- `_cookidoo_api` no longer holds a closed session reference after a failed reconnect
+- Step parsing no longer corrupts steps that start with a digit or temperature value
+
+---
+
 ## [0.1.0.0] — 2026-04-18
 
 First tracked release. Built on top of `alexandrepa/mcp-cookidoo` (v0.1.0 upstream).
