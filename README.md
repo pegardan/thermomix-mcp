@@ -8,7 +8,7 @@ MCP server local para Claude Desktop y Claude Code que convierte cualquier recet
 
 ## Qué hace
 
-- Escribe `/receta` en Claude Desktop o Claude Code
+- Escribe `/recipe` en Claude Desktop o Claude Code
 - Claude te pregunta qué receta quieres convertir
 - Le das una URL, texto pegado o una foto
 - Claude convierte al formato Thermomix (pasos, velocidades, temperaturas, ingredientes en gramos)
@@ -37,7 +37,7 @@ El proyecto combina tres piezas:
 - Límites de temperatura por modelo (TM5 max 120°C, TM6 max 160°C, TM7 max 180°C)
 - Formato de ingredientes: `200 g de harina de trigo`, `3 dientes de ajo`
 
-Al declarar el skill como MCP Prompt queda disponible como `/receta` tanto en Claude Desktop como en Claude Code sin configuración adicional.
+Al declarar el skill como MCP Prompt queda disponible como `/recipe` tanto en Claude Desktop como en Claude Code sin configuración adicional.
 
 ---
 
@@ -67,6 +67,24 @@ COOKIDOO_LANGUAGE=es-ES
 COOKIDOO_DEVICE=TM6        # TM5, TM6, TM7 o TM31
 ```
 
+### Idioma del prompt
+
+El idioma del prompt `/recipe` se detecta automáticamente desde las variables de entorno POSIX (`LC_ALL` > `LC_MESSAGES` > `LANG`). Idiomas soportados: `en`, `es`, `fr`. Si el idioma detectado no está soportado (o ninguna variable está definida), se usa inglés por defecto.
+
+En macOS, las apps GUI como Claude Desktop suelen heredar `LANG` sin definir. Para forzar un idioma específico, añade un bloque `env` en la configuración de Claude Desktop:
+
+```json
+{
+  "mcpServers": {
+    "thermomix": {
+      "command": "/ruta/al/proyecto/thermomix-mcp/.venv/bin/python",
+      "args": ["/ruta/al/proyecto/thermomix-mcp/server.py"],
+      "env": { "LANG": "es_ES.UTF-8" }
+    }
+  }
+}
+```
+
 ### 3. Registrar en Claude Desktop
 
 Edita `~/Library/Application Support/Claude/claude_desktop_config.json`:
@@ -82,7 +100,7 @@ Edita `~/Library/Application Support/Claude/claude_desktop_config.json`:
 }
 ```
 
-Reinicia Claude Desktop. El comando `/receta` aparecerá automáticamente.
+Reinicia Claude Desktop. El comando `/recipe` aparecerá automáticamente.
 
 ### 4. Registrar en Claude Code (opcional)
 
@@ -101,7 +119,7 @@ O ejecutar en modo desarrollo para probar:
 ## Uso
 
 ```
-/receta
+/recipe
 ```
 
 Claude pregunta por la receta. Puedes dar:
@@ -115,7 +133,7 @@ Claude convierte, valida y espera tu confirmación antes de subir.
 
 ## Tools MCP disponibles
 
-Además del prompt `/receta`, el server expone estos tools que Claude usa internamente:
+Además del prompt `/recipe`, el server expone estos tools que Claude usa internamente:
 
 | Tool | Descripción |
 |---|---|
@@ -142,7 +160,7 @@ Además del prompt `/receta`, el server expone estos tools que Claude usa intern
 |---|---|
 | Auth email/password | ✅ |
 | create/edit custom recipe | ✅ |
-| Skill `/receta` (MCP Prompt) | 🔧 en desarrollo |
+| Skill `/recipe` (MCP Prompt) | 🔧 en desarrollo |
 | Anotaciones INGREDIENT + TTS | ⏳ Fase B |
 | Soporte `Mariosd23` PR mergeado | ⏳ pendiente upstream |
 

@@ -250,11 +250,11 @@ async def test_connect_success_returns_message(MockService, mock_dotenv, monkeyp
 
 
 # ---------------------------------------------------------------------------
-# receta() prompt
+# recipe_prompt() prompt
 # ---------------------------------------------------------------------------
 
 
-from server import receta as receta_prompt  # noqa: E402
+from server import recipe_prompt, _detect_prompt_language  # noqa: E402
 
 
 def _msg_text(msg) -> str:
@@ -262,17 +262,25 @@ def _msg_text(msg) -> str:
     return msg.content.text
 
 
-def test_receta_returns_two_messages(monkeypatch):
+@pytest.fixture(autouse=True)
+def _force_english_prompt(monkeypatch):
+    """Pin language detection to English so device/temp assertions work regardless of shell locale."""
+    monkeypatch.setenv("LANG", "en_US.UTF-8")
+    monkeypatch.delenv("LC_ALL", raising=False)
+    monkeypatch.delenv("LC_MESSAGES", raising=False)
+
+
+def test_recipe_prompt_returns_two_messages(monkeypatch):
     monkeypatch.delenv("COOKIDOO_DEVICE", raising=False)
-    result = receta_prompt()
+    result = recipe_prompt()
     assert len(result) == 2
     assert result[0].role == "user"
     assert result[1].role == "assistant"
 
 
-def test_receta_default_device_is_tm6(monkeypatch):
+def test_recipe_prompt_default_device_is_tm6(monkeypatch):
     monkeypatch.delenv("COOKIDOO_DEVICE", raising=False)
-    result = receta_prompt()
+    result = recipe_prompt()
     text = _msg_text(result[0])
     assert "TM6" in text
     assert "160" in text
@@ -284,16 +292,69 @@ def test_receta_default_device_is_tm6(monkeypatch):
     ("TM6", "160"),
     ("TM7", "180"),
 ])
-def test_receta_temp_limits_per_device(device, expected_temp, monkeypatch):
+def test_recipe_prompt_temp_limits_per_device(device, expected_temp, monkeypatch):
     monkeypatch.setenv("COOKIDOO_DEVICE", device)
-    result = receta_prompt()
+    result = recipe_prompt()
     text = _msg_text(result[0])
     assert device in text
     assert expected_temp in text
 
 
-def test_receta_unknown_device_defaults_to_160(monkeypatch):
+def test_recipe_prompt_unknown_device_defaults_to_160(monkeypatch):
     monkeypatch.setenv("COOKIDOO_DEVICE", "TM99")
-    result = receta_prompt()
+    result = recipe_prompt()
     text = _msg_text(result[0])
     assert "160" in text
+
+
+# ---------------------------------------------------------------------------
+# Prompt language detection
+# ---------------------------------------------------------------------------
+
+
+@pytest.mark.parametrize("env_var,env_value,expected", [
+    ("LANG", "en_US.UTF-8", "en"),
+    ("LANG", "es_ES.UTF-8", "es"),
+    ("LANG", "fr_FR.UTF-8", "fr"),
+    ("LANG", "no_NO.UTF-8", "en"),
+    ("LANG", "C", "en"),
+    ("LC_MESSAGES", "es_ES.UTF-8", "es"),
+    ("LC_ALL", "fr_FR.UTF-8", "fr"),
+])
+def test_detect_prompt_language(env_var, env_value, expected, monkeypatch):
+    for k in ("LC_ALL", "LC_MESSAGES", "LANG"):
+        monkeypatch.delenv(k, raising=False)
+    monkeypatch.setenv(env_var, env_value)
+    assert _detect_prompt_language() == expected
+
+
+def test_detect_prompt_language_no_env_defaults_to_english(monkeypatch):
+    for k in ("LC_ALL", "LC_MESSAGES", "LANG"):
+        monkeypatch.delenv(k, raising=False)
+    assert _detect_prompt_language() == "en"
+
+
+def test_detect_prompt_language_precedence(monkeypatch):
+    monkeypatch.setenv("LANG", "fr_FR.UTF-8")
+    monkeypatch.setenv("LC_MESSAGES", "es_ES.UTF-8")
+    monkeypatch.setenv("LC_ALL", "en_US.UTF-8")
+    assert _detect_prompt_language() == "en"
+    monkeypatch.delenv("LC_ALL")
+    assert _detect_prompt_language() == "es"
+    monkeypatch.delenv("LC_MESSAGES")
+    assert _detect_prompt_language() == "fr"
+
+
+@pytest.mark.parametrize("lang_env,expected_marker", [
+    ("en_US.UTF-8", "Hi! I'm your Thermomix"),
+    ("es_ES.UTF-8", "¡Hola! Soy tu asistente Thermomix"),
+    ("fr_FR.UTF-8", "Bonjour ! Je suis ton assistant Thermomix"),
+])
+def test_recipe_prompt_dispatches_by_language(lang_env, expected_marker, monkeypatch):
+    for k in ("LC_ALL", "LC_MESSAGES", "LANG"):
+        monkeypatch.delenv(k, raising=False)
+    monkeypatch.setenv("LANG", lang_env)
+    monkeypatch.delenv("COOKIDOO_DEVICE", raising=False)
+    result = recipe_prompt()
+    assistant_text = _msg_text(result[1])
+    assert expected_marker in assistant_text
